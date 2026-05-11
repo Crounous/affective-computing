@@ -306,6 +306,31 @@ export const authedTemplate = (headerHtml) => `
   </div>
 
   <div
+    id="video-player-modal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center px-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="video-player-title"
+  >
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" data-player-close></div>
+    <div class="relative w-full max-w-4xl">
+      <div class="overflow-hidden rounded-3xl border border-white/40 shadow-2xl shadow-black/60">
+        <div class="aspect-video w-full" id="video-player-frame"></div>
+      </div>
+      <div class="flex justify-center pb-4 pt-4">
+        <div class="flex items-center gap-3 rounded-full border border-white/20 bg-slate-950/70 px-4 py-3 shadow-xl shadow-black/50 backdrop-blur">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg" data-emotion-dot>•</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg" data-emotion-dot>•</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg" data-emotion-dot>•</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg" data-emotion-dot>•</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg" data-emotion-dot>•</span>
+        </div>
+      </div>
+      <video id="emotion-video" class="hidden" autoplay muted playsinline></video>
+    </div>
+  </div>
+
+  <div
     id="onboarding-modal"
     class="fixed inset-0 z-50 hidden flex items-center justify-center px-6"
     role="dialog"
