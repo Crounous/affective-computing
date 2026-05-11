@@ -8,10 +8,30 @@ export const escapeHtml = (value) =>
 
 export const headerTemplate = ({ username, avatarUrl }) => `
   <header class="relative z-20 border-b border-white/10 bg-slate-950/60 backdrop-blur">
-    <div class="mx-auto flex items-center justify-between px-6 py-4">
+    <div class="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 py-4">
       <a class="font-display text-lg text-white" href="/" data-nav="home">
         emojiboxd
       </a>
+      <div class="relative mx-auto w-full max-w-md" data-header-search>
+        <form
+          class="flex w-full items-center gap-2 rounded-full border border-white/10 bg-slate-950/70 px-4 py-2 text-sm text-slate-200 shadow-lg shadow-black/30"
+          data-header-search-form
+        >
+          <input
+            class="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+            type="search"
+            name="q"
+            placeholder="Search videos"
+            autocomplete="off"
+            aria-label="Search videos"
+            data-header-search-input
+          />
+        </form>
+        <div
+          class="absolute left-0 right-0 mt-2 hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 shadow-2xl shadow-black/60"
+          data-header-search-results
+        ></div>
+      </div>
       <div class="relative">
         <button
           class="flex items-center gap-3 bg-transparent px-2 py-2 text-sm text-slate-200 transition hover:text-white"
@@ -179,38 +199,50 @@ export const authedTemplate = (headerHtml) => `
           <div>
             <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Library</p>
             <nav class="mt-4 space-y-2">
-              <button class="flex w-full items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-left">
+              <button
+                class="flex w-full items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-left transition hover:bg-white/5"
+                type="button"
+                data-nav="home"
+                data-nav-item
+              >
                 Home
                 <span class="text-xs text-slate-400">Now</span>
               </button>
-              <button class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5">
-                History
-              </button>
-              <button class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5">
+              <button
+                class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5"
+                type="button"
+                data-nav="reviews"
+                data-nav-item
+              >
                 Reviews
               </button>
-              <button class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5">
-                Watchlist
-              </button>
-              <button class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5">
+              <button
+                class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-white/5"
+                type="button"
+                data-nav="friends"
+                data-nav-item
+              >
                 Friends
               </button>
             </nav>
           </div>
         </aside>
 
-        <section class="min-w-0 space-y-10" data-video-query="video essay">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Suggested</p>
-              <h2 class="mt-2 font-display text-2xl text-white">Tonight on YouTube</h2>
-            </div>
-            <button class="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/30">
-              See all
-            </button>
+        <section class="min-w-0 space-y-10" data-section="home" data-video-query="video essay">
+          <div class="flex items-center justify-between gap-4">
+            <h2 class="font-display text-2xl text-white">Suggested</h2>
+            <select
+              class="rounded-full border border-white/15 bg-slate-950/60 px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/30"
+              data-video-filter
+              aria-label="Filter suggested videos"
+            >
+              <option value="all">All videos</option>
+              <option value="long">Long-form</option>
+              <option value="shorts">Shorts</option>
+            </select>
           </div>
           <p class="text-xs text-slate-400" data-video-status aria-live="polite">Loading suggestions...</p>
-          <div class="relative">
+          <div class="relative" data-suggested-carousel>
             <button
               class="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-slate-900/80 text-white/80 transition hover:border-white/30 hover:text-white sm:flex"
               type="button"
@@ -253,6 +285,13 @@ export const authedTemplate = (headerHtml) => `
                 </div>
               </article>
             </div>
+          </div>
+
+          <div class="mt-4 hidden space-y-3" data-search-results>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Search results</p>
+            <div class="space-y-3" data-video-list></div>
+            <p class="hidden text-xs text-slate-400" data-search-loading>Loading more...</p>
+            <div class="h-1" data-search-sentinel></div>
           </div>
 
           <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -301,6 +340,15 @@ export const authedTemplate = (headerHtml) => `
             </div>
           </div>
         </section>
+
+        <section class="min-w-0 space-y-6 hidden" data-section="reviews">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Reviews</p>
+            <h2 class="mt-2 font-display text-2xl text-white">Emotion history</h2>
+          </div>
+          <p class="text-xs text-slate-400" data-reviews-status>Loading reviews...</p>
+          <div class="space-y-4" data-reviews-list></div>
+        </section>
       </div>
     </main>
   </div>
@@ -314,8 +362,11 @@ export const authedTemplate = (headerHtml) => `
   >
     <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" data-player-close></div>
     <div class="relative w-full max-w-4xl">
-      <div class="overflow-hidden rounded-3xl border border-white/40 shadow-2xl shadow-black/60">
-        <div class="aspect-video w-full" id="video-player-frame"></div>
+      <div
+        class="aspect-video mx-auto overflow-hidden rounded-3xl border border-white/40 shadow-2xl shadow-black/60"
+        data-player-shell
+      >
+        <div class="h-full w-full" id="video-player-frame"></div>
       </div>
       <div class="flex justify-center pb-4 pt-4">
         <div class="flex items-center gap-3 rounded-full border border-white/20 bg-slate-950/70 px-4 py-3 shadow-xl shadow-black/50 backdrop-blur">

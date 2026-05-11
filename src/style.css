@@ -49,3 +49,23 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.aspect-portrait {
+  aspect-ratio: 9 / 16;
+}
+
+[data-player-shell] {
+  width: 100%;
+}
+
+[data-player-shell].aspect-portrait {
+  margin-inline: auto;
+  width: min(80vw, 420px);
+}
+
+#video-player-frame,
+#video-player-frame iframe {
+  display: block;
+  height: 100% !important;
+  width: 100% !important;
+}

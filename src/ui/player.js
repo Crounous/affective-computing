@@ -101,13 +101,15 @@ const emotionToCode = (emotion) => EMOTION_CODES[emotion] ?? 0
 
 export const setupVideoPlayer = ({ app, supabase, user }) => {
   const modal = app.querySelector('#video-player-modal')
+  const frameShell = app.querySelector('[data-player-shell]')
   const frameContainer = app.querySelector('#video-player-frame')
   const titleEl = app.querySelector('#video-player-title')
   const carousel = app.querySelector('[data-video-carousel]')
+  const videoList = app.querySelector('[data-video-list]')
   const dots = Array.from(app.querySelectorAll('[data-emotion-dot]'))
   const cameraVideo = app.querySelector('#emotion-video')
 
-  if (!modal || !frameContainer || !carousel || !cameraVideo) {
+  if (!modal || !frameContainer || !cameraVideo) {
     return () => {}
   }
 
@@ -242,6 +244,16 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     sampleTimer = setInterval(tick, SAMPLE_INTERVAL_MS)
   }
 
+  const applyOrientation = (isShort) => {
+    const target = frameShell || frameContainer
+    if (!target) {
+      return
+    }
+
+    target.classList.remove('aspect-video', 'aspect-portrait')
+    target.classList.add(isShort ? 'aspect-portrait' : 'aspect-video')
+  }
+
   const startTracking = async () => {
     if (trackingActive) {
       startSampling()
@@ -343,10 +355,10 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     playerReady = true
   }
 
-  const openPlayer = async ({ videoId, title }) => {
+  const openPlayer = async ({ videoId, title, isShort }) => {
     resetTimeline()
     hasSaved = false
-    currentVideo = { id: videoId, title }
+    currentVideo = { id: videoId, title, isShort }
     stopTracking()
 
     if (titleEl) {
@@ -354,6 +366,7 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     }
 
     modal.classList.remove('hidden')
+    applyOrientation(Boolean(isShort))
     await createPlayer(videoId)
 
     const ready = await startTracking()
@@ -376,7 +389,7 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     }
   }
 
-  const handleCarouselClick = (event) => {
+  const handleVideoClick = (event) => {
     const card = event.target.closest('[data-video-card]')
     if (!card) {
       return
@@ -385,6 +398,7 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     openPlayer({
       videoId: card.dataset.videoId,
       title: card.dataset.videoTitle,
+      isShort: card.dataset.videoIsShort === 'true',
     }).catch((error) => {
       console.error('Unable to open player', error)
     })
@@ -402,14 +416,16 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     }
   }
 
-  carousel.addEventListener('click', handleCarouselClick)
+  carousel?.addEventListener('click', handleVideoClick)
+  videoList?.addEventListener('click', handleVideoClick)
   modal.addEventListener('click', handleModalClick)
   document.addEventListener('keydown', handleKeydown)
 
   resetTimeline()
 
   return () => {
-    carousel.removeEventListener('click', handleCarouselClick)
+    carousel?.removeEventListener('click', handleVideoClick)
+    videoList?.removeEventListener('click', handleVideoClick)
     modal.removeEventListener('click', handleModalClick)
     document.removeEventListener('keydown', handleKeydown)
     closePlayer()

@@ -26,7 +26,24 @@ const formatDuration = (isoDuration) => {
   return `${totalMinutes}:${paddedSeconds}`
 }
 
-export const getVideos = async ({ query, maxResults = 10 }) => {
+const parseDurationSeconds = (isoDuration) => {
+  if (!isoDuration) {
+    return 0
+  }
+
+  const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!match) {
+    return 0
+  }
+
+  const hours = Number(match[1] || 0)
+  const minutes = Number(match[2] || 0)
+  const seconds = Number(match[3] || 0)
+
+  return hours * 3600 + minutes * 60 + seconds
+}
+
+const fetchVideosPage = async ({ query, maxResults = 10, pageToken }) => {
   const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY
 
   if (!apiKey) {
@@ -39,6 +56,9 @@ export const getVideos = async ({ query, maxResults = 10 }) => {
   url.searchParams.set('q', query)
   url.searchParams.set('type', 'video')
   url.searchParams.set('key', apiKey)
+  if (pageToken) {
+    url.searchParams.set('pageToken', pageToken)
+  }
 
   const res = await fetch(url.toString())
 
@@ -62,7 +82,7 @@ export const getVideos = async ({ query, maxResults = 10 }) => {
 
   const ids = videos.map((video) => video.id).join(',')
   if (!ids) {
-    return videos
+    return { videos, nextPageToken: data.nextPageToken || null }
   }
 
   try {
@@ -73,22 +93,41 @@ export const getVideos = async ({ query, maxResults = 10 }) => {
 
     const detailsRes = await fetch(detailsUrl.toString())
     if (!detailsRes.ok) {
-      return videos
+      return { videos, nextPageToken: data.nextPageToken || null }
     }
 
     const detailsData = await detailsRes.json()
     const durationMap = new Map(
-      (detailsData.items || []).map((item) => [
-        item.id,
-        formatDuration(item.contentDetails?.duration),
-      ])
+      (detailsData.items || []).map((item) => {
+        const isoDuration = item.contentDetails?.duration
+        return [
+          item.id,
+          {
+            duration: formatDuration(isoDuration),
+            durationSeconds: parseDurationSeconds(isoDuration),
+          },
+        ]
+      })
     )
 
-    return videos.map((video) => ({
-      ...video,
-      duration: durationMap.get(video.id) || '',
-    }))
+    const enriched = videos.map((video) => {
+      const details = durationMap.get(video.id)
+      return {
+        ...video,
+        duration: details?.duration || '',
+        durationSeconds: details?.durationSeconds || 0,
+      }
+    })
+
+    return { videos: enriched, nextPageToken: data.nextPageToken || null }
   } catch {
-    return videos
+    return { videos, nextPageToken: data.nextPageToken || null }
   }
 }
+
+export const getVideos = async ({ query, maxResults = 10 }) => {
+  const { videos } = await fetchVideosPage({ query, maxResults })
+  return videos
+}
+
+export const getVideosPage = fetchVideosPage
