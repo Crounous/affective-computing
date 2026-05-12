@@ -293,11 +293,18 @@ export const setupVideoPlayer = ({ app, supabase, user }) => {
     }
 
     finalizeAllSegments()
+    const segments = buildSegmentEmotions()
+    const hasAnalyzedEmotions = segments.some((code) => code !== 0)
+
+    if (!hasAnalyzedEmotions) {
+      return
+    }
+
     const payload = {
       user_id: user.id,
       video_id: currentVideo.id,
       video_title: currentVideo.title || null,
-      segment_emotions: buildSegmentEmotions(),
+      segment_emotions: segments,
     }
 
     const { error } = await supabase
