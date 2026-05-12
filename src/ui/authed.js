@@ -100,7 +100,7 @@ const buildVideoCard = (video) => {
 
   return `
     <button
-      class="relative min-w-[260px] overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 text-left transition hover:border-white/30"
+      class="relative min-w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 text-left transition hover:border-white/30"
       type="button"
       data-video-card
       data-video-id="${video.id}"
@@ -365,6 +365,7 @@ export const renderAuthed = ({ app, supabase, session }) => {
     })
   )
 
+  const recentReviewsList = app.querySelector('[data-recent-reviews-list]')
   const headerCleanup = setupHeaderMenu({ app, supabase })
   const carouselCleanup = setupCarouselControls({ app })
   const playerCleanup = setupVideoPlayer({ app, supabase, user })
@@ -398,6 +399,58 @@ export const renderAuthed = ({ app, supabase, session }) => {
   let searchActive = false
   let searchObserver = null
   let reviewsLoaded = false
+
+  const loadRecentReviews = async () => {
+    if (!recentReviewsList || !user?.id) return
+
+    const { data, error } = await supabase
+      .from('video_emotion_segments')
+      .select('video_id, video_title, segment_emotions, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(3)
+
+    if (error || !data?.length) {
+      recentReviewsList.innerHTML = '<p class="text-xs text-slate-400">No recent reviews.</p>'
+      return
+    }
+
+    recentReviewsList.innerHTML = data.map(review => {
+      const title = escapeHtml(review.video_title || review.video_id || 'Untitled video')
+      const date = review.created_at ? new Date(review.created_at).toLocaleDateString() : ''
+      const videoId = String(review.video_id || '').trim()
+      const thumbUrl = videoId
+        ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`
+        : ''
+      const segments = Array.isArray(review.segment_emotions) ? review.segment_emotions : []
+      const pills = (segments.length ? segments : [0, 0, 0, 0, 0])
+        .map((code) => {
+          const emoji = EMOTION_EMOJI[Number(code)] || '•'
+          const tone = Number(code) === 0 ? 'text-slate-500' : 'text-slate-100'
+          return `<span class="${tone}">${emoji}</span>`
+        })
+        .join('')
+      
+      return `
+        <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+          <div class="flex items-center gap-3 min-w-0 pr-4">
+            <div class="h-10 w-16 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900/60">
+              ${
+                thumbUrl
+                  ? `<img class="h-full w-full object-cover" src="${thumbUrl}" alt="${title}" />`
+                  : `<div class="h-full w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950"></div>`
+              }
+            </div>
+            <div class="min-w-0">
+              <p class="truncate font-semibold text-white">${title}</p>
+              <p class="text-xs text-slate-400">${date}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-sm">${pills}</div>
+        </div>
+      `
+    }).join('')
+  }
 
   const renderSuggestedVideos = () => {
     if (!carousel || !status) {
@@ -660,10 +713,21 @@ export const renderAuthed = ({ app, supabase, session }) => {
     })
   }
 
+  let carouselScrollPosition = 0
+
   const showSection = (target) => {
+    const carousel = app.querySelector('[data-video-carousel]')
+    if (target !== 'home' && homeSection && !homeSection.classList.contains('hidden')) {
+      carouselScrollPosition = carousel ? carousel.scrollLeft : 0
+    }
+
     homeSection?.classList.toggle('hidden', target !== 'home')
     reviewsSection?.classList.toggle('hidden', target !== 'reviews')
     setActiveNav(target)
+
+    if (target === 'home' && carousel) {
+      carousel.scrollLeft = carouselScrollPosition
+    }
   }
 
   const loadReviews = async () => {
@@ -753,6 +817,8 @@ export const renderAuthed = ({ app, supabase, session }) => {
     )
     searchObserver.observe(searchSentinel)
   }
+
+  loadRecentReviews()
 
   return () => {
     headerCleanup?.()

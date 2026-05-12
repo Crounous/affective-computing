@@ -207,6 +207,13 @@ export const setupOnboarding = async ({ app, supabase, user }) => {
       return
     }
 
+    const isSecure = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]/.test(password)
+    if (!isSecure) {
+      setMessage('Password must contain an uppercase letter, a lowercase letter, a number, and a special character.', 'text-rose-300')
+      passwordInput.focus()
+      return
+    }
+
     if (password !== confirm) {
       setMessage('Passwords do not match.', 'text-rose-300')
       confirmInput.focus()

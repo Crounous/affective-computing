@@ -30,20 +30,33 @@ const syncSessionView = async () => {
 
 syncSessionView()
 
-supabase.auth.onAuthStateChange((_event, session) => {
+let signoutTimer = null
+
+supabase.auth.onAuthStateChange((event, session) => {
+  // Ignore INITIAL_SESSION as syncSessionView handles the initial load
+  if (event === 'INITIAL_SESSION') {
+    return
+  }
+
+  if (signoutTimer) {
+    clearTimeout(signoutTimer)
+    signoutTimer = null
+  }
+
   const isAuthedView = Boolean(app.querySelector('[data-page="authed"]'))
 
   if (session) {
-    if (currentUserId === session.user.id && isAuthedView) {
+    if (isAuthedView) {
       return
     }
     showAuthed(session)
     return
   }
 
-  if (!session && currentUserId === null && !isAuthedView) {
-    return
+  if (event === 'SIGNED_OUT') {
+    // Delay sign-out to ignore transient tab-focus events
+    signoutTimer = setTimeout(() => {
+      showGuest()
+    }, 100)
   }
-
-  showGuest()
 })

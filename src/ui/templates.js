@@ -294,34 +294,14 @@ export const authedTemplate = (headerHtml) => `
             <div class="h-1" data-search-sentinel></div>
           </div>
 
-          <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div class="grid gap-6 md:grid-cols-2">
             <div class="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-white">Recent reviews</h3>
-                <button class="text-xs uppercase tracking-[0.3em] text-slate-400">View all</button>
+                <button class="text-xs uppercase tracking-[0.3em] text-slate-400 hover:text-white transition" type="button" data-nav="reviews">View all</button>
               </div>
-              <div class="mt-4 space-y-3 text-sm text-slate-200">
-                <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div>
-                    <p class="font-semibold text-white">Why the pacing finally works</p>
-                    <p class="text-xs text-slate-400">2 days ago</p>
-                  </div>
-                  <span class="text-xs text-amber-200">8.6</span>
-                </div>
-                <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div>
-                    <p class="font-semibold text-white">Thumbnail glow-up breakdown</p>
-                    <p class="text-xs text-slate-400">5 days ago</p>
-                  </div>
-                  <span class="text-xs text-amber-200">7.9</span>
-                </div>
-                <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div>
-                    <p class="font-semibold text-white">Story arc, zero fluff</p>
-                    <p class="text-xs text-slate-400">1 week ago</p>
-                  </div>
-                  <span class="text-xs text-amber-200">9.1</span>
-                </div>
+              <div class="mt-4 space-y-3 text-sm text-slate-200" data-recent-reviews-list>
+                <p class="text-xs text-slate-400">Loading...</p>
               </div>
             </div>
 

@@ -92,7 +92,8 @@ export const renderGuest = ({ app, supabase }) => {
     const email = emailInput.value.trim()
     const password = passwordInput.value
 
-    if (!email || !email.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
       setMessage('Enter a valid email address.', 'text-rose-300')
       emailInput.focus()
       return
@@ -104,10 +105,19 @@ export const renderGuest = ({ app, supabase }) => {
       return
     }
 
-    if (mode === 'signup' && confirmInput.value !== password) {
-      setMessage('Passwords do not match.', 'text-rose-300')
-      confirmInput.focus()
-      return
+    if (mode === 'signup') {
+      const isSecure = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]/.test(password)
+      if (!isSecure) {
+        setMessage('Password must contain an uppercase letter, a lowercase letter, a number, and a special character.', 'text-rose-300')
+        passwordInput.focus()
+        return
+      }
+
+      if (confirmInput.value !== password) {
+        setMessage('Passwords do not match.', 'text-rose-300')
+        confirmInput.focus()
+        return
+      }
     }
 
     setLoading(true)
@@ -128,6 +138,7 @@ export const renderGuest = ({ app, supabase }) => {
             data: {
               username,
             },
+            emailRedirectTo: window.location.origin,
           },
         })
 
